@@ -8,9 +8,14 @@ import { MemoryBlockstore } from "blockstore-core";
 import { MemoryDatastore } from "datastore-core";
 import { createHelia } from "helia";
 import { createLibp2p } from "libp2p";
+import { CID } from 'multiformats/cid'
 import * as filesys from "node:fs/promises";
+import express from "express";
+const app = express();
+app.use(express.json());
 
-async function createNode() {
+
+export async function createNode() {
   // the blockstore is where we store the blocks that make up files
   const blockstore = new MemoryBlockstore();
 
@@ -47,42 +52,107 @@ async function createNode() {
     libp2p,
   });
 }
-
 // create two helia nodes
 const node1 = await createNode();
 const node2 = await createNode();
-
+// console.log(node1);
+// console.log(node2);
 // connect them together
 const multiaddrs = node2.libp2p.getMultiaddrs();
 await node1.libp2p.dial(multiaddrs[0]);
 
-// create a filesystem on top of Helia, in this case it's UnixFS
-const fs = unixfs(node1);
 
-// we will use this TextEncoder to turn strings into Uint8Arrays
-const encoder = new TextEncoder();
+export async function uploadData() {
+  // const node1 = await createNode();
+  // create a filesystem on top of Helia, in this case it's UnixFS
+  // const node1 = await createHelia();
+  const fs = unixfs(node1);
 
-//getting contents of file in a unit8 array
-const fileContent = await filesys.readFile("text.txt");
+  // we will use this TextEncoder to turn strings into Uint8Arrays
+  const encoder = new TextEncoder();
 
-// add the bytes to your node and receive a unique content identifier
-// const cid = await fs.addBytes(encoder.encode('Hello World 301'))
-const cid = await fs.addBytes(fileContent);
+  //getting contents of file in a unit8 array
+  const fileContent = await filesys.readFile("encrypted.txt");
 
-console.log("Added file:", cid.toString());
+  // add the bytes to your node and receive a unique content identifier
+  // const cid = await fs.addBytes(encoder.encode('Hello World 301'))
+  const cid = await fs.addBytes(fileContent);
+  console.log(typeof cid)
+  console.log("Added file:", cid.toString());
 
-// create a filesystem on top of the second Helia node
-const fs2 = unixfs(node2);
+  const decoder = new TextDecoder();
+  let text = "";
+  // console.log(fs2.cat(cid))
+  // use the second Helia node to fetch the file from the first Helia node
+  for await (const chunk of fs.cat(cid)) {
+    console.log(chunk)
+    text += decoder.decode(chunk, {
+      stream: true,
+    });
+  }
 
-// this decoder will turn Uint8Arrays into strings
-const decoder = new TextDecoder();
-let text = "";
-
-// use the second Helia node to fetch the file from the first Helia node
-for await (const chunk of fs2.cat(cid)) {
-  text += decoder.decode(chunk, {
-    stream: true,
-  });
+  console.log("Fetched file contents:", text);
 }
 
-console.log("Fetched file contents:", text);
+export async function retrieveData(c) {
+  // const node2 = await createNode();
+  // create a filesystem on top of the second Helia node
+  // const node2 = await createHelia();
+  const cid = CID.parse(c)
+  const fs2 = unixfs(node2);
+  console.log(cid)
+  // this decoder will turn Uint8Arrays into strings
+  const decoder = new TextDecoder();
+  let text = "";
+  // console.log(fs2.cat(cid))
+  // use the second Helia node to fetch the file from the first Helia node
+  for await (const chunk of fs2.cat(cid)) {
+    console.log(chunk)
+    text += decoder.decode(chunk, {
+      stream: true,
+    });
+  }
+
+  console.log("Fetched file contents:", text);
+}
+
+// create two helia nodes
+// const node1 = await createNode();
+// const node2 = await createNode();
+// console.log(node1);
+// console.log(node2);
+// // connect them together
+// const multiaddrs = node2.libp2p.getMultiaddrs();
+// await node1.libp2p.dial(multiaddrs[0]);
+
+// create a filesystem on top of Helia, in this case it's UnixFS
+// const fs = unixfs(node1);
+
+// // we will use this TextEncoder to turn strings into Uint8Arrays
+// const encoder = new TextEncoder();
+
+// //getting contents of file in a unit8 array
+// const fileContent = await filesys.readFile("encrypted.txt");
+
+// // add the bytes to your node and receive a unique content identifier
+// // const cid = await fs.addBytes(encoder.encode('Hello World 301'))
+// const cid = await fs.addBytes(fileContent);
+
+// console.log("Added file:", cid.toString());
+
+// create a filesystem on top of the second Helia node
+// const fs2 = unixfs(node2);
+
+// this decoder will turn Uint8Arrays into strings
+// const decoder = new TextDecoder();
+// let text = "";
+
+// // use the second Helia node to fetch the file from the first Helia node
+// for await (const chunk of fs2.cat(cid)) {
+//   console.log(chunk)
+//   text += decoder.decode(chunk, {
+//     stream: true,
+//   });
+// }
+
+// console.log("Fetched file contents:", text);
