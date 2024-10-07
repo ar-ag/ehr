@@ -1,7 +1,20 @@
+/*
+This was a trial function
+Correct implementation is in:
+app.js -> patient
+doctor.js -> doctor
+test.js -> key generation
+ipfs_server.js -> ipfs upload and retrieval
+encryption.js -> for encrypting files
+*/
+
+
+
+
 const express = require("express");
 const bodyParser = require("body-parser");
 const crypto = require("crypto");
-const axios = require("axios");
+const axios = require("./node_modules/axios/index.d.cts");
 const app = express();
 app.use(bodyParser.json());
 

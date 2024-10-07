@@ -40,7 +40,7 @@ app.get('/fetch', async (req, res) => {
     
     const cidString = req.query.cid; // cidString is a string or an object
     let c;
-
+    console.log("hey from fetch ipfs");
     // Check if cidString is an object
     if (typeof cidString === 'object') {
         // Extract the value from the object
@@ -58,7 +58,7 @@ app.get('/fetch', async (req, res) => {
     
     // use the second Helia node to fetch the file from the first Helia node
     for await (const chunk of fs2.cat(cid)) {
-        // console.log(chunk)
+        console.log(chunk)
         text += decoder.decode(chunk, {
         stream: true,
         });

@@ -1,7 +1,7 @@
 import crypto from 'crypto'
 import fs from 'fs';
 
-const inputPath = '50mb.txt';
+const inputPath = '10mb.txt';
 const outputPath = 'encrypted.txt';
 const decrypted = 'decrypted.txt';
 

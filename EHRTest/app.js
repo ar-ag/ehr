@@ -37,7 +37,7 @@ async function fetchKeys() {
     let ivc = Buffer.from(iv.data);
     const cid_res = await axios.get("http://localhost:3000/cid");
     const cid = cid_res.data.cid;
-    console.log(cid)
+    console.log("CID",cid)
     const data = {cid: cid};
     const retrieve = await axios.get("http://localhost:3003/fetch", {params:data})
     const startTime = performance.now();
