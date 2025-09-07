@@ -5,7 +5,8 @@ import axios from "axios";
 import { encryptData } from "./encryption.js";
 import { uploadData } from "./ipfs.js";
 import { performance } from 'perf_hooks';
-
+import { readFile } from 'fs/promises';
+import path from 'path';
 const app = express();
 app.use(bodyParser.json());
 
@@ -38,7 +39,19 @@ async function fetchKeys() {
     const endTime = performance.now();
     const duration = endTime - startTime;
     console.log('Encryption Operation took ' + duration + ' milliseconds.');
-    const upload = await axios.get("http://localhost:3003/upload")
+    // const upload = await axios.post("http://localhost:3003/upload")
+    // Read encrypted file contents as a buffer
+    const filePath = path.join('D:', 'ehr', 'EHRTest', 'encrypted.txt');
+    console.log(`${filePath}`)
+    const fileData = await readFile(filePath); // No encoding specified
+    console.log('Buffer length:', fileData.length);        // Should show non-zero
+    console.log('Raw buffer data:', fileData);             // Buffer object
+    // console.log('Base64 encoded:', fileData.toString('base64')); // Optional readable form
+    // console.log(`the fileData: ${fileData.toString('base64')}`)
+    // Send file content in a POST request
+    const upload = await axios.post("http://localhost:3003/upload", fileData.toString('base64'), {
+        headers: { 'Content-Type': 'text/plain' } // Binary file type
+    });
     cid = upload.data;
     
   } catch (error) {
@@ -59,3 +72,4 @@ app.listen(3000, () => {
   console.log("Doctor Node running on port 3000");
   fetchKeys();
 });
+ 

@@ -13,7 +13,7 @@ async function createNode() {
     return fs;
 }
 
-app.get('/upload', async (req, res) => {
+app.post('/upload', async (req, res) => {
     const startTime = performance.now();
     const fs = await createNode();
     // we will use this TextEncoder to turn strings into Uint8Arrays
@@ -58,7 +58,7 @@ app.get('/fetch', async (req, res) => {
     
     // use the second Helia node to fetch the file from the first Helia node
     for await (const chunk of fs2.cat(cid)) {
-        console.log(chunk)
+        // console.log(chunk)
         text += decoder.decode(chunk, {
         stream: true,
         });

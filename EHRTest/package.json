@@ -26,6 +26,7 @@
     "express": "^4.19.2",
     "helia": "^4.0.1",
     "libp2p": "^1.2.0",
+    "mlkem": "^2.1.0",
     "multiformats": "^13.1.0",
     "nodemon": "^3.1.0"
   },

@@ -1,7 +1,7 @@
 import crypto from 'crypto'
-import fs from 'fs';
-
-const inputPath = '10mb.txt';
+import fs from 'fs'
+import { readFile, writeFile } from 'fs/promises'; 
+const inputPath = '300kb.txt';
 const outputPath = 'encrypted.txt';
 const decrypted = 'decrypted.txt';
 
@@ -13,16 +13,33 @@ const decrypted = 'decrypted.txt';
 // ]);
 
 export async function encryptData(key, iv) {
-
-    const symmKey = await crypto.createHash('sha512').update(key).digest('hex').substring(0, 32)
+    // console.log('hi from encryptData')
+    // const symmKey = await crypto.createHash('sha512').update(key).digest('hex').substring(0, 32)
     
-    const cipher = await crypto.createCipheriv('aes-256-cbc', symmKey, iv)
+    // const cipher = await crypto.createCipheriv('aes-256-cbc', symmKey, iv)
+    
+    // const input = await fs.createReadStream(inputPath);
+    // const output = await fs.createWriteStream(outputPath);
+    
+    // await input.pipe(cipher).pipe(output);
+    const symmKey = crypto.createHash('sha512').update(key).digest('hex').substring(0, 32);
+    const cipher = crypto.createCipheriv('aes-256-cbc', symmKey, iv);
 
-    const input = await fs.createReadStream(inputPath);
-    const output = await fs.createWriteStream(outputPath);
+    const input = fs.createReadStream(inputPath);
+    const output = fs.createWriteStream(outputPath);
 
-    await input.pipe(cipher).pipe(output);
-    console.log('File encrypted successfully.');
+    return new Promise((resolve, reject) => {
+        input.pipe(cipher).pipe(output)
+            .on('finish', () => {
+                console.log('Encryption finished');
+                resolve();
+            })
+            .on('error', (err) => {
+                console.error('Encryption error:', err);
+                reject(err);
+            });
+    });
+    
 }
 
 
